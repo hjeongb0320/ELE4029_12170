@@ -38,6 +38,10 @@ void printToken( TokenType token, const char* tokenString )
     case LE: fprintf(listing,"<=\n"); break;
     case GE: fprintf(listing,">=\n"); break;
     case NE: fprintf(listing,"!=\n"); break;
+    case LSQ: fprintf(listing,"[\n"); break;
+    case RSQ: fprintf(listing,"[\n"); break;
+    case LBRACE: fprintf(listing,"{\n"); break;
+    case RBRACE: fprintf(listing,"}\n"); break;
     case NUM:
       fprintf(listing,
           "NUM, val= %s\n",tokenString);
