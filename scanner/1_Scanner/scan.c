@@ -11,7 +11,10 @@
 
 /* states in scanner DFA */
 typedef enum
-   { START,INEQ,INCOMMENT,INNUM,INID,DONE }
+   { START,
+   INEQ,INLE,INGE,INNE,
+   INCOMMENT,INNUM,INID,
+   DONE }
    StateType;
 
 /* lexeme of identifier or reserved word */
@@ -95,6 +98,12 @@ TokenType getToken(void)
            state = INID;
          else if (c == '=')
            state = INEQ;
+         else if (c == '<')
+           state = INLE; 
+         else if (c == '>')
+           state = INGE; 
+         else if (c == '!')
+           state = INNE; 
          else if ((c == ' ') || (c == '\t') || (c == '\n'))
            save = FALSE;
          else if (c == '{')
@@ -150,6 +159,38 @@ TokenType getToken(void)
          state = DONE;
          if (c == '=') currentToken = EQ;
          else if(c == ' ') currentToken = ASSIGN;
+         else
+         { /* backup in the input */
+           ungetNextChar();
+           save = FALSE;
+           currentToken = ERROR;
+         }
+         break;
+       case INLE:
+         state = DONE;
+         if (c == '=') currentToken = LE;
+         else if(c == ' ') currentToken = LT;
+         else
+         { /* backup in the input */
+           ungetNextChar();
+           save = FALSE;
+           currentToken = ERROR;
+         }
+         break;
+       case INGE:
+         state = DONE;
+         if (c == '=') currentToken = GE;
+         else if(c == ' ') currentToken = GT;
+         else
+         { /* backup in the input */
+           ungetNextChar();
+           save = FALSE;
+           currentToken = ERROR;
+         }
+         break;
+       case INNE:
+         state = DONE;
+         if (c == '=') currentToken = NE;
          else
          { /* backup in the input */
            ungetNextChar();
