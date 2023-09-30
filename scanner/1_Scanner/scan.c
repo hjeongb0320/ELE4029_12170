@@ -106,7 +106,7 @@ TokenType getToken(void)
            state = INNE; 
          else if ((c == ' ') || (c == '\t') || (c == '\n'))
            save = FALSE;
-         else if (c == '{')
+         else if (c == '/') // TODO : comment
          { save = FALSE;
            state = INCOMMENT;
          }
@@ -117,9 +117,6 @@ TokenType getToken(void)
                save = FALSE;
                currentToken = ENDFILE;
                break;
-             case '<':
-               currentToken = LT;
-               break;
              case '+':
                currentToken = PLUS;
                break;
@@ -129,14 +126,23 @@ TokenType getToken(void)
              case '*':
                currentToken = TIMES;
                break;
-             case '/':
-               currentToken = OVER;
-               break;
              case '(':
                currentToken = LPAREN;
                break;
              case ')':
                currentToken = RPAREN;
+               break;
+             case '{':
+               currentToken = LBRACE;
+               break;
+             case '}':
+               currentToken = RBRACE;
+               break;
+             case '[':
+               currentToken = LSQ;
+               break;
+             case ']':
+               currentToken = RSQ;
                break;
              case ';':
                currentToken = SEMI;
