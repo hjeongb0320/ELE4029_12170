@@ -13,7 +13,8 @@
 typedef enum
    { START,
    INEQ,INLE,INGE,INNE,
-   INCOMMENT,INNUM,INID,
+   INSTARTCOMMENT,INFINISHCOMMENT,INCOMMENT,
+   INNUM,INID,
    DONE }
    StateType;
 
@@ -106,9 +107,10 @@ TokenType getToken(void)
            state = INNE; 
          else if ((c == ' ') || (c == '\t') || (c == '\n'))
            save = FALSE;
-         else if (c == '/') // TODO : comment
-         { save = FALSE;
-           state = INCOMMENT;
+         else if (c == '/')
+         { 
+           save = FALSE;
+           state = INSTARTCOMMENT;
          }
          else
          { state = DONE;
@@ -153,13 +155,37 @@ TokenType getToken(void)
            }
          }
          break;
-       case INCOMMENT:
-         save = FALSE;
-         if (c == EOF)
+       case INSTARTCOMMENT:
+          save = FALSE;
+         if (c == ' ') {
+          save = TRUE;
+          currentToken = OVER;
+         } else if (c == '*') {
+          state = INCOMMENT;
+         } else if (c == EOF)
          { state = DONE;
            currentToken = ENDFILE;
          }
-         else if (c == '}') state = START;
+         break;
+       case INCOMMENT:
+          save = FALSE;
+          if(c == '*') {
+            state = INFINISHCOMMENT;
+          } else if (c == EOF)
+          { state = DONE;
+           currentToken = ENDFILE;
+          }
+         break;
+       case INFINISHCOMMENT:
+          save = FALSE;
+          if(c == '/') {
+            state = START;
+          } else if (c == EOF)
+          { state = DONE;
+           currentToken = ENDFILE;
+          } else {
+            state = INCOMMENT;
+          }
          break;
        case INEQ:
          state = DONE;
