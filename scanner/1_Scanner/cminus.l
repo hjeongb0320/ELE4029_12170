@@ -55,12 +55,10 @@ whitespace  [ \t]+
                   char c;
                   int stage = 1;
 
-                  while(1) {
+                  do {
                     c = input();
 
-                    if (c == '/' && stage == 2) break;
-
-                    if (c == EOF) break;
+                    if (!c) break;
                     if (c == '\n') lineno++;
 
                     if (stage == 1) {
@@ -69,7 +67,7 @@ whitespace  [ \t]+
                       if(c == '/') break;
                       else stage = 1;
                     }
-                  }
+                  } while(1);
                 }
 .               {return ERROR;}
 
