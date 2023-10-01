@@ -160,14 +160,15 @@ TokenType getToken(void)
          break;
        case INSTARTCOMMENT:
           save = FALSE;
-         if (c == ' ') {
-          save = TRUE;
-          currentToken = OVER;
-         } else if (c == '*') {
+         if (c == '*') {
           state = INCOMMENT;
          } else if (c == EOF)
          { state = DONE;
            currentToken = ENDFILE;
+         } else {
+          ungetNextChar();
+          state = DONE;
+          currentToken = OVER;
          }
          break;
        case INCOMMENT:
@@ -193,34 +194,31 @@ TokenType getToken(void)
        case INEQ:
          state = DONE;
          if (c == '=') currentToken = EQ;
-         else if(c == ' ') currentToken = ASSIGN;
          else
          { /* backup in the input */
            ungetNextChar();
            save = FALSE;
-           currentToken = ERROR;
+           currentToken = ASSIGN;
          }
          break;
        case INLE:
          state = DONE;
          if (c == '=') currentToken = LE;
-         else if(c == ' ') currentToken = LT;
          else
          { /* backup in the input */
            ungetNextChar();
            save = FALSE;
-           currentToken = ERROR;
+           currentToken = LT;
          }
          break;
        case INGE:
          state = DONE;
          if (c == '=') currentToken = GE;
-         else if(c == ' ') currentToken = GT;
          else
          { /* backup in the input */
            ungetNextChar();
            save = FALSE;
-           currentToken = ERROR;
+           currentToken = GT;
          }
          break;
        case INNE:
