@@ -58,7 +58,10 @@ whitespace  [ \t]+
                   do {
                     c = input();
 
-                    if (!c) break;
+                    if (!c) {
+                      lineno++;
+                      break;
+                    }
                     if (c == '\n') lineno++;
 
                     if (stage == 1) {

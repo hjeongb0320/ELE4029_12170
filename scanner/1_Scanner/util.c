@@ -34,7 +34,7 @@ void printToken( TokenType token, const char* tokenString )
     case LPAREN: fprintf(listing,"(\n"); break;
     case RPAREN: fprintf(listing,")\n"); break;
     case LSQ: fprintf(listing,"[\n"); break;
-    case RSQ: fprintf(listing,"[\n"); break;
+    case RSQ: fprintf(listing,"]\n"); break;
     case LBRACE: fprintf(listing,"{\n"); break;
     case RBRACE: fprintf(listing,"}\n"); break;
     case SEMI: fprintf(listing,";\n"); break;
