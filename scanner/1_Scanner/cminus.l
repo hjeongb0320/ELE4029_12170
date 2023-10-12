@@ -59,7 +59,6 @@ whitespace  [ \t]+
                     c = input();
 
                     if (!c) {
-                      lineno++;
                       break;
                     }
                     if (c == '\n') lineno++;
