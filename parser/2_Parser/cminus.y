@@ -73,46 +73,83 @@ type_specifier      : INT  { $$ = newTreeNode(TypeSpecifier); $$->lineno = linen
                     ;
 fun_declaration     : type_specifier identifier LPAREN params RPAREN compound_stmt
                          { 
-							
+							$$ = newTreeNode(FunDecl);
+              $$->lineno = $2->lineno;
+              $$->type = $1->type;
+              $$->name = $2->name;
+              $$->child[0] = $4;
+              $$->child[1] = $6;
+              free($1); free($2);
                          }
                     ;
 params              : param_list { $$ = $1; }
-                    | VOID
-                         {
-							
-                         }
+                    | VOID { $$ = newTreeNode(Params); $$->lineno = lineno; $$->type = Void; }
                     ;
 param_list          : param_list COMMA param
                          {
-							
+							YYSTYPE t = $1; 
+							if (t != NULL)
+                            {
+								while (t->sibling != NULL) t = t->sibling;
+								t->sibling = $3; 
+								$$ = $1; 
+							} 
+							else $$ = $3;
                          }
-                    | param {  }
+                    | param { $$ = $1; }
                     ;
 param               : type_specifier identifier
                          {
-						
+						  $$ = newTreeNode(Param);
+              $$->lineno = $2->lineno;
+              $$->type = $1->type;
+              $$->name = $2->name;
+              free($1); free($2);
                          }
                     | type_specifier identifier LBRACE RBRACE
                          { 
-							
+						  $$ = newTreeNode(Param);
+              $$->lineno = $2->lineno;
+              if ($1->type == Integer) $$->type = IntegerArray;
+              else if ($1->type == Void) $$->type = VoidArray;
+              else $$->type = None;
+              $$->name = $2->name;
+              free($1); free($2);
                          }
                     ;
 compound_stmt       : LCURLY local_declarations statement_list RCURLY
                          { 
-							
+              $$ = newTreeNode(CompoundStmt);
+              $$->lineno = $3;
+              $$->child[0] = $2;
+              $$->child[0] = $3;
                          }
                     ;
 local_declarations  : local_declarations var_declaration
                          {
-							
+							YYSTYPE t = $1; 
+							if (t != NULL)
+                            {
+								while (t->sibling != NULL) t = t->sibling;
+								t->sibling = $2; 
+								$$ = $1; 
+							} 
+							else $$ = $2;							
                          }
-                    | empty { }
+                    | empty { $$ = $1; }
                     ;
 statement_list      : statement_list statement
-                         { 
-							
+                         {
+							YYSTYPE t = $1; 
+							if (t != NULL)
+                            {
+								while (t->sibling != NULL) t = t->sibling;
+								t->sibling = $2; 
+								$$ = $1; 
+							} 
+							else $$ = $2;							
                          }
-                    | empty {  }
+                    | empty { $$ = $1; }
                     ;
 statement			: selection_stmt { $$ = $1; }
 					| expression_stmt { $$ = $1; }
