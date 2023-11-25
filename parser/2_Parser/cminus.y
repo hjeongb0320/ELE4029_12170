@@ -73,7 +73,7 @@ type_specifier      : INT  { $$ = newTreeNode(TypeSpecifier); $$->lineno = linen
                     ;
 fun_declaration     : type_specifier identifier LPAREN params RPAREN compound_stmt
                          { 
-							$$ = newTreeNode(FunDecl);
+							$$ = newTreeNode(FunctionDecl);
               $$->lineno = $2->lineno;
               $$->type = $1->type;
               $$->name = $2->name;
@@ -83,7 +83,7 @@ fun_declaration     : type_specifier identifier LPAREN params RPAREN compound_st
                          }
                     ;
 params              : param_list { $$ = $1; }
-                    | VOID { $$ = newTreeNode(Params); $$->lineno = lineno; $$->type = Void; }
+                    | VOID { $$ = newTreeNode(Params); $$->flag = TRUE; }
                     ;
 param_list          : param_list COMMA param
                          {
@@ -100,7 +100,7 @@ param_list          : param_list COMMA param
                     ;
 param               : type_specifier identifier
                          {
-						  $$ = newTreeNode(Param);
+						  $$ = newTreeNode(Params);
               $$->lineno = $2->lineno;
               $$->type = $1->type;
               $$->name = $2->name;
@@ -108,7 +108,7 @@ param               : type_specifier identifier
                          }
                     | type_specifier identifier LBRACE RBRACE
                          { 
-						  $$ = newTreeNode(Param);
+						  $$ = newTreeNode(Params);
               $$->lineno = $2->lineno;
               if ($1->type == Integer) $$->type = IntegerArray;
               else if ($1->type == Void) $$->type = VoidArray;
@@ -122,7 +122,7 @@ compound_stmt       : LCURLY local_declarations statement_list RCURLY
               $$ = newTreeNode(CompoundStmt);
               $$->lineno = $3;
               $$->child[0] = $2;
-              $$->child[0] = $3;
+              $$->child[1] = $3;
                          }
                     ;
 local_declarations  : local_declarations var_declaration
@@ -159,86 +159,114 @@ statement			: selection_stmt { $$ = $1; }
 					;
 selection_stmt		: IF LPAREN expression RPAREN statement ELSE statement
 						{
-							
+							$$ = newTreeNode(IfStmt);
+              $$->flag = TRUE;
+              $$->child[0] = $3;
+              $$->child[1] = $5;
+              $$->child[2] = $7;
 						}
 					| IF LPAREN expression RPAREN statement 
 						{
-							
+							$$ = newTreeNode(IfStmt);
+              $$->child[0] = $3;
+              $$->child[1] = $5;
 						}
 					;
-expression_stmt     : expression SEMI { }
-                    | SEMI {  }
+expression_stmt     : expression SEMI { $$ = $1; }
+                    | SEMI { }
                     ;
 iteration_stmt      : WHILE LPAREN expression RPAREN statement
                          { 
-							
+							$$ = newTreeNode(WhileStmt);
+              $$->child[0] = $3;
+              $$->child[1] = $5;
                          }
                     ;
 return_stmt         : RETURN SEMI 
 						{ 
-							
+							$$ = newTreeNode(ReturnStmt);
+              $$->child[0] = NULL;
 						}
                     | RETURN expression SEMI
                          { 
+                           $$ = newTreeNode(ReturnStmt);
+                           $$->child[0] = $2;
                          }
                     ;
 expression          : var ASSIGN expression
                          { 
-
+              $$ = newTreeNode(AssignExpr);
+              $$->child[0] = $1;
+              $$->child[1] = $3;            
                          }
                     | simple_expression { $$ = $1; }
                     ;
 var                 : identifier
                          { 
-							
+                           $$ = newTreeNode(VarAccessExpr);
+                           $$->name = $1->name;
                          }
                     | identifier LBRACE expression RBRACE
                          {
-							
+                           $$ = newTreeNode(VarAccessExpr);
+                           $$->name = $1->name;
+                           $$->child[0] = $3;
                          }
                     ;
 simple_expression   : additive_expression relop additive_expression
                          { 
-							
+                           $$ = newTreeNode(BinOpExpr);
+                           $$->opcode = $2->opcode;
+                           $$->child[0] = $1;
+                           $$->child[1] = $3;
                          }
                     | additive_expression { $$ = $1; }
                     ;
 relop               : LE { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = LE; }
                     | LT { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = LT; }
-                    | GT {  }
-                    | GE {  }
-                    | EQ {  }
-                    | NE {  }
+                    | GT { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = GT; }
+                    | GE { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = GE; }
+                    | EQ { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = EQ; }
+                    | NE { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = NE; }
                     ;
 additive_expression : additive_expression addop term
                          { 
-							
+                           $$ = newTreeNode(BinOpExpr);
+                           $$->opcode = $2->opcode;
+                           $$->child[0] = $1;
+                           $$->child[1] = $3;
                          }
-					| term {  }
-addop				: PLUS  {  }
-					| MINUS {  }
+					| term { $$ = $1; }
+addop				: PLUS  { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = PLUS; }
+					| MINUS { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = MINUS; }
 					;
 term                : term mulop factor
 						{
-							
+                           $$ = newTreeNode(BinOpExpr);
+                           $$->opcode = $2->opcode;
+                           $$->child[0] = $1;
+                           $$->child[1] = $3;							
 						}
-					| factor {  }
+					| factor { $$ = $1; }
 					;
-mulop               : TIMES {  }
-					| OVER  {  }
+mulop               : TIMES { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = TIMES; }
+					| OVER  { $$ = newTreeNode(Opcode); $$->lineno = lineno; $$->opcode = OVER; }
 					;
-factor              : LPAREN expression RPAREN {  }
-                    | var {  }
-                    | call {  }
-                    | number {  }
+factor              : LPAREN expression RPAREN { $$ = $2; }
+                    | var { $$ = $1; }
+                    | call { $$ = $1; }
+                    | number { $$ = $1; }
                     ;
 call                : identifier LPAREN args RPAREN
                          { 
-							
+                           $$ = newTreeNode(CallExpr);
+                           $$->lineno = $1->lineno;
+                           $$->name = $1->name;
+                           $$->child[0] = $3;
                          }
                     ;
-args                : arg_list {  }
-                    | empty {  }
+args                : arg_list { $$ = $1; }
+                    | empty { $$ = $1; }
                     ;
 arg_list            : arg_list COMMA expression
                          {
